@@ -1,9 +1,18 @@
 @use 'fonts';
 @use 'variables';
+@use 'utils';
+@use 'components';
 
 * {
   font-family: var(--font-primary);
   box-sizing: border-box;
   margin: 0;
   padding: 0;
+}
+
+body {
+  background-color: var(--background-color);
+  color: var(--dark-color);
+  width: 100%;
+  height: 100vh;
 }

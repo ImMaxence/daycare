@@ -1,0 +1,42 @@
+.w300 {
+    width: 300px;
+}
+
+.w60 {
+    width: 60px;
+}
+
+.wfull {
+    width: 100%;
+}
+
+.hfull {
+    height: 100%;
+}
+
+.flex-col {
+    display: flex;
+    flex-direction: column;
+}
+
+.flex-center {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.gap {
+    gap: 1rem
+}
+
+.text-center {
+    text-align: center;
+}
+
+.mt1 {
+    margin-top: 1rem;
+}
+
+.mb2 {
+    margin-bottom: 2rem;
+}

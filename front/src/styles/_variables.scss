@@ -1,3 +1,12 @@
 :root {
   --font-primary: 'GoogleSansFlexVariable', sans-serif;
+  --dark-color: #333;
+  --light-color: #fff;
+  --main-color: #2196F3;
+  --secondary-color: #0D47A1;
+  --background-color: #E3F2FD;
+  --border-radius: 5px;
+
+  --padding-component: 10px 20px;
+  --border-component: 1px solid var(--secondary-color);
 }

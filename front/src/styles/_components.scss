@@ -1,0 +1,13 @@
+button {
+    background-color: var(--main-color);
+    color: var(--light-color);
+    border: var(--border-component);
+    padding: var(--padding-component);
+    border-radius: var(--border-radius);
+}
+
+input {
+    padding: var(--padding-component);
+    border-radius: var(--border-radius);
+    border: var(--border-component);
+}
