@@ -19,8 +19,6 @@ services:
     build: 
       context: ./back
       dockerfile: Dockerfile
-    ports:
-      - "8080:8080"
     depends_on:
       db:
         condition: service_healthy
@@ -34,8 +32,6 @@ services:
     build: 
       context: ./front
       dockerfile: Dockerfile
-    ports:
-      - "80:80"
     depends_on:
       - backend
     restart: unless-stopped
