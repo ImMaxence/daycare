@@ -1,0 +1,9 @@
+@use 'fonts';
+@use 'variables';
+
+* {
+  font-family: var(--font-primary);
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
