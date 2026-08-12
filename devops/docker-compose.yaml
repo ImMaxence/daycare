@@ -17,7 +17,7 @@ services:
 
   backend:
     build: 
-      context: ../back
+      context: ./back
       dockerfile: Dockerfile
     ports:
       - "8080:8080"
@@ -32,7 +32,7 @@ services:
 
   frontend:
     build: 
-      context: ../front
+      context: ./front
       dockerfile: Dockerfile
     ports:
       - "80:80"
