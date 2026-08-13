@@ -37,7 +37,7 @@ public class DataInitializer implements CommandLineRunner {
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
     private final DaycareRepository daycareRepository;
-    private final ObjectMapper objectMapper;
+    private final ObjectMapper objectMapper = new ObjectMapper();
 
     @Value("${app.default-user.username:admin}")
     private String defaultUsername;
@@ -68,6 +68,10 @@ public class DataInitializer implements CommandLineRunner {
     }
 
     private void initDaycares() throws Exception {
+        if (daycareRepository.count() > 0) {
+            log.info("Des crèches sont déjà présentes en base, ingestion de '{}' ignorée.", OSM_EXPORT_FILE);
+            return;
+        }
 
         OsmResponse osmResponse = loadOsmResponse();
         List<OsmElement> elements = osmResponse.getElements() != null ? osmResponse.getElements() : List.of();
