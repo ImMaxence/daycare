@@ -3,8 +3,8 @@ spring:
     name: daycare
   datasource:
     url: ${DB_URL:jdbc:postgresql://localhost:5432/daycare}
-    username: ${DB_USERNAME:daycare}
-    password: ${DB_PASSWORD:daycare}
+    username: ${DB_USERNAME:postgres}
+    password: ${DB_PASSWORD:rootpassword}
   jpa:
     hibernate:
       ddl-auto: validate

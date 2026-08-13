@@ -4,6 +4,7 @@ import com.back.daycare.dto.request.LoginRequest;
 import com.back.daycare.dto.request.RefreshTokenRequest;
 import com.back.daycare.dto.response.TokenResponse;
 import com.back.daycare.service.AuthService;
+import io.swagger.v3.oas.annotations.Operation;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -19,12 +20,13 @@ public class AuthController {
 
     private final AuthService authService;
 
-    // todo open api with @Operation tag operationId, delete openapiconfig
+    @Operation(operationId = "login", tags = {"auth"})
     @PostMapping("/login")
     public ResponseEntity<TokenResponse> login(@Valid @RequestBody LoginRequest request) {
         return ResponseEntity.ok(authService.login(request));
     }
 
+    @Operation(operationId = "refresh", tags = {"auth"})
     @PostMapping("/refresh")
     public ResponseEntity<TokenResponse> refresh(@Valid @RequestBody RefreshTokenRequest request) {
         return ResponseEntity.ok(authService.refresh(request));

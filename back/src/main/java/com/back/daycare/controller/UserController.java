@@ -2,6 +2,7 @@ package com.back.daycare.controller;
 
 import com.back.daycare.dto.response.UserResponse;
 import com.back.daycare.service.UserService;
+import io.swagger.v3.oas.annotations.Operation;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.oauth2.jwt.Jwt;
@@ -17,6 +18,7 @@ public class UserController {
 
     private final UserService userService;
 
+    @Operation(operationId = "getCurrentUser", tags = {"user"})
     @GetMapping("/me")
     public ResponseEntity<UserResponse> me(@AuthenticationPrincipal Jwt jwt) {
         return ResponseEntity.ok(userService.getCurrentUser(jwt.getSubject()));
