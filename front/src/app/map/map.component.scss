@@ -5,6 +5,7 @@
 }
 
 .content {
+    position: relative;
     display: flex;
     flex: 1;
     min-height: 0;
@@ -15,7 +16,39 @@
     z-index: 1;
 }
 
+.legend {
+    position: absolute;
+    bottom: 16px;
+    left: 16px;
+    z-index: 1000;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    margin: 0;
+    padding: var(--padding-component);
+    list-style: none;
+    background-color: var(--background-color);
+    border: var(--border-component);
+    border-radius: 6px;
+}
+
+.legend-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 0.85rem;
+    color: var(--dark-color);
+}
+
+.legend-swatch {
+    width: 14px;
+    height: 14px;
+    border-radius: 3px;
+    flex-shrink: 0;
+}
+
 .info-panel {
+    position: relative;
     width: 320px;
     flex-shrink: 0;
     padding: var(--padding-component);
@@ -27,6 +60,55 @@
         color: var(--secondary-color);
         margin-top: 0;
     }
+
+    .address {
+        color: var(--dark-color);
+    }
+}
+
+.close-btn {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    border: none;
+    background: none;
+    color: var(--secondary-color);
+    font-size: 1.5rem;
+    line-height: 1;
+    cursor: pointer;
+}
+
+.status-label {
+    display: block;
+    margin-top: 16px;
+    margin-bottom: 4px;
+    font-weight: 600;
+    color: var(--secondary-color);
+}
+
+.gmaps-btn {
+    display: inline-block;
+    margin-top: 12px;
+    padding: 8px 12px;
+    border: var(--border-component);
+    border-radius: 6px;
+    color: var(--secondary-color);
+    text-decoration: none;
+    font-weight: 600;
+    text-align: center;
+
+    &:hover {
+        background-color: var(--secondary-color);
+        color: #fff;
+    }
+}
+
+select {
+    width: 100%;
+    padding: 8px;
+    border-radius: 6px;
+    border: var(--border-component);
+    background-color: #fff;
 }
 
 .placeholder {

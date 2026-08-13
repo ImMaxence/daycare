@@ -2,10 +2,45 @@
     <app-header />
     <div class="content">
         <div #mapContainer class="map-frame"></div>
+
+        <ul class="legend">
+            @for (entry of legendEntries; track entry.status) {
+            <li class="legend-item">
+                <span class="legend-swatch" [style.background-color]="entry.color"></span>
+                <span class="legend-label">{{ entry.label }}</span>
+            </li>
+            }
+        </ul>
+
         <aside class="info-panel">
-            @if (selectedPing(); as ping) {
-            <h2>{{ ping.name }}</h2>
-            <p>{{ ping.description }}</p>
+            @if (selectedDaycare(); as daycare) {
+            <button type="button" class="close-btn" (click)="closePanel()">×</button>
+            <h2>{{ daycare.name }}</h2>
+            <p class="address">
+                {{ daycare.houseNumber }} {{ daycare.street }}<br />
+                {{ daycare.postcode }} {{ daycare.city }}
+            </p>
+            @if (daycare.phone) {
+            <p><strong>Téléphone :</strong> {{ daycare.phone }}</p>
+            }
+            @if (daycare.operator) {
+            <p><strong>Opérateur :</strong> {{ daycare.operator }}</p>
+            }
+            @if (daycare.note) {
+            <p><strong>Note :</strong> {{ daycare.note }}</p>
+            }
+
+            <a class="gmaps-btn" [href]="googleMapsUrl(daycare)" target="_blank" rel="noopener noreferrer">
+                Voir dans Google Maps
+            </a>
+
+            <label class="status-label" for="status-select">Statut</label>
+            <select id="status-select" name="status" [ngModel]="daycare.status"
+                (ngModelChange)="onStatusChange($event)">
+                @for (entry of legendEntries; track entry.status) {
+                <option [value]="entry.status">{{ entry.label }}</option>
+                }
+            </select>
             } @else {
             <p class="placeholder">Cliquez sur un point de la carte pour afficher ses informations</p>
             }
