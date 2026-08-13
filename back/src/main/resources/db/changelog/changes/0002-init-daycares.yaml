@@ -1,0 +1,87 @@
+databaseChangeLog:
+  - changeSet:
+      id: 0002-init-daycares
+      author: daycare
+      changes:
+        - createTable:
+            tableName: daycares
+            columns:
+              - column:
+                  name: id
+                  type: UUID
+                  defaultValueComputed: gen_random_uuid()
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+              - column:
+                  name: osm_id
+                  type: BIGINT
+                  constraints:
+                    nullable: true
+              - column:
+                  name: name
+                  type: VARCHAR(255)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: latitude
+                  type: DOUBLE
+                  constraints:
+                    nullable: true
+              - column:
+                  name: longitude
+                  type: DOUBLE
+                  constraints:
+                    nullable: true
+              - column:
+                  name: house_number
+                  type: VARCHAR(50)
+                  constraints:
+                    nullable: true
+              - column:
+                  name: street
+                  type: VARCHAR(255)
+                  constraints:
+                    nullable: true
+              - column:
+                  name: postcode
+                  type: VARCHAR(20)
+                  constraints:
+                    nullable: true
+              - column:
+                  name: city
+                  type: VARCHAR(255)
+                  constraints:
+                    nullable: true
+              - column:
+                  name: phone
+                  type: VARCHAR(50)
+                  constraints:
+                    nullable: true
+              - column:
+                  name: operator
+                  type: VARCHAR(255)
+                  constraints:
+                    nullable: true
+              - column:
+                  name: siret
+                  type: VARCHAR(20)
+                  constraints:
+                    nullable: true
+              - column:
+                  name: note
+                  type: TEXT
+                  constraints:
+                    nullable: true
+              - column:
+                  name: source
+                  type: VARCHAR(255)
+                  constraints:
+                    nullable: true
+              - column:
+                  name: status
+                  type: VARCHAR(30)
+                  constraints:
+                    nullable: false
+
+
