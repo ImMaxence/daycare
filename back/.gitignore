@@ -31,3 +31,7 @@ build/
 
 ### VS Code ###
 .vscode/
+
+### JWT RSA keys (secrets - ne jamais commiter) ###
+src/main/resources/certs/*.pem
+
