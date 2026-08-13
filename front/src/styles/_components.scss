@@ -4,10 +4,17 @@ button {
     border: var(--border-component);
     padding: var(--padding-component);
     border-radius: var(--border-radius);
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+button:hover {
+    background-color: var(--secondary-color);
 }
 
 input {
     padding: var(--padding-component);
     border-radius: var(--border-radius);
     border: var(--border-component);
+    cursor: pointer;
 }
