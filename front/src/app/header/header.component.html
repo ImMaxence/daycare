@@ -1,10 +1,17 @@
 <header class="flex-center wfull gap">
-    @if (currentUser(); as user) {
-    <span class="avatar" [style.background-color]="avatarColor()">{{ avatarInitial() }}</span>
-    <span class="username">{{ user.username }}</span>
-    <span class="tooltip-wrapper">
-        <img src="icon/custom/info.svg" alt="Info" class="info-icon">
-        <span class="tooltip-content">Dernière connexion : {{ lastConnexionLabel() }}</span>
-    </span>
-    }
+    <div class="brand">
+        <img src="icon/site/icon-64.png" alt="Daycare" class="brand-icon">
+        <span class="brand-title">Daycare - personal project</span>
+    </div>
+    <div class="user-info flex-center gap">
+        @if (currentUser(); as user) {
+        <span class="avatar" [style.background-color]="avatarColor()">{{ avatarInitial() }}</span>
+        <span class="username">{{ user.username }}</span>
+        <span class="tooltip-wrapper">
+            <img src="icon/custom/info.svg" alt="Info" class="info-icon">
+            <span class="tooltip-content">Dernière connexion : {{ lastConnexionLabel() }}</span>
+        </span>
+        }
+        <button type="button" class="logout-btn" (click)="logout()">Déconnexion</button>
+    </div>
 </header>

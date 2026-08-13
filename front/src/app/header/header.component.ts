@@ -1,5 +1,6 @@
 import { Component, OnInit, computed, inject } from '@angular/core';
 import { format } from 'date-fns';
+import { Router } from '@angular/router';
 import { AuthStateService } from '../../service/auth-state.service';
 
 @Component({
@@ -10,6 +11,7 @@ import { AuthStateService } from '../../service/auth-state.service';
 })
 export class HeaderComponent implements OnInit {
     private readonly authStateService = inject(AuthStateService);
+    private readonly router = inject(Router);
 
     readonly currentUser = this.authStateService.currentUser;
 
@@ -25,6 +27,11 @@ export class HeaderComponent implements OnInit {
         if (!this.currentUser()) {
             this.authStateService.loadCurrentUser().subscribe();
         }
+    }
+
+    logout(): void {
+        this.authStateService.logout();
+        this.router.navigateByUrl('/login');
     }
 
     // deterministic pastel-ish color derived from the username so it stays stable across sessions

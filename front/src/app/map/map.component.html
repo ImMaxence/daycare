@@ -1,2 +1,14 @@
-<app-header />
-<h1>Carte</h1>
+<div class="page">
+    <app-header />
+    <div class="content">
+        <div #mapContainer class="map-frame"></div>
+        <aside class="info-panel">
+            @if (selectedPing(); as ping) {
+            <h2>{{ ping.name }}</h2>
+            <p>{{ ping.description }}</p>
+            } @else {
+            <p class="placeholder">Cliquez sur un point de la carte pour afficher ses informations</p>
+            }
+        </aside>
+    </div>
+</div>

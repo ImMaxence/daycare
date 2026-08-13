@@ -3,6 +3,8 @@
 @use 'utils';
 @use 'components';
 
+@import "leaflet/dist/leaflet.css";
+
 * {
   font-family: var(--font-primary);
   box-sizing: border-box;
