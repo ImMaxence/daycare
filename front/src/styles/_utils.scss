@@ -1,3 +1,5 @@
+// Size
+
 .w300 {
     width: 300px;
 }
@@ -13,6 +15,8 @@
 .hfull {
     height: 100%;
 }
+
+// Flex
 
 .flex-col {
     display: flex;
@@ -33,10 +37,19 @@
     text-align: center;
 }
 
+// Margin
+
 .mt1 {
     margin-top: 1rem;
 }
 
 .mb2 {
     margin-bottom: 2rem;
+}
+
+// Utils
+
+.error {
+    color: var(--error-color);
+    font-size: 0.8rem;
 }
