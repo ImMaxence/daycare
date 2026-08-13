@@ -18,7 +18,7 @@ public class UserService {
 
     public UserResponse getCurrentUser(String username) {
         return userRepository.findByUsername(username)
-                .map(userMapper::toResponse)
+                .map(userMapper::toDto)
                 .orElseThrow(() -> new ResourceNotFoundException("Utilisateur introuvable : " + username));
     }
 }
