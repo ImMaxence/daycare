@@ -7,7 +7,6 @@ ${AnsiColor.BRIGHT_CYAN}
 |_____/ \__,_|\__, |\___\__,_|_|  \___|
                __/ |
               |___/
-${AnsiColor.BRIGHT_YELLOW}:: Daycare API ::${AnsiColor.DEFAULT}${AnsiColor.BRIGHT_GREEN} (v${application.version:dev})${AnsiColor.DEFAULT}
 ${AnsiColor.BRIGHT_BLACK}:: Spring Boot ::${AnsiColor.DEFAULT}${AnsiColor.BRIGHT_MAGENTA} (v${spring-boot.version})${AnsiColor.DEFAULT}
 
 

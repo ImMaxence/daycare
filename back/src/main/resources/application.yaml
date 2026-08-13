@@ -1,8 +1,11 @@
 spring:
   application:
     name: daycare
+  output:
+    ansi:
+      enabled: ALWAYS
   datasource:
-    url: ${DB_URL:jdbc:postgresql://localhost:5432/daycare}
+    url: ${DB_URL:jdbc:postgresql://localhost:5432/daycare_db}
     username: ${DB_USERNAME:postgres}
     password: ${DB_PASSWORD:rootpassword}
   jpa:
