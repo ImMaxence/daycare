@@ -19,6 +19,7 @@ public class AuthController {
 
     private final AuthService authService;
 
+    // todo open api with @Operation tag operationId, delete openapiconfig
     @PostMapping("/login")
     public ResponseEntity<TokenResponse> login(@Valid @RequestBody LoginRequest request) {
         return ResponseEntity.ok(authService.login(request));

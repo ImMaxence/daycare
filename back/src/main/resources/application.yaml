@@ -26,6 +26,5 @@ jwt:
   # TTL = Time To Live = durée de vie du token avant expiration
   access-token-ttl-seconds: 900     # 15 minutes
   refresh-token-ttl-seconds: 604800 # 7 jours (7 * 24h)
-  rsa:
-    public-key: classpath:certs/public.pem
-    private-key: classpath:certs/private.pem
+  # Clé symétrique HMAC (HS256) : string brute, min. 32 caractères (256 bits)
+  secret: ${JWT_SECRET:change-me-in-prod-with-a-32-bytes-secret}
