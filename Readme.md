@@ -5,4 +5,5 @@ overpass turbo openstreetmap
 
 map daycares from BOUCHE DU RHONE and around... (GARD vaucluse var alpes de haute Provence). 
 
-ng generate component login
+ng generate component login. 
+npm run generate-api. 
