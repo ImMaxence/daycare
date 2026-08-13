@@ -1,5 +1,10 @@
-<header class="flex-center wfull">
+<header class="flex-center wfull gap">
     @if (currentUser(); as user) {
+    <span class="avatar" [style.background-color]="avatarColor()">{{ avatarInitial() }}</span>
     <span class="username">{{ user.username }}</span>
+    <span class="tooltip-wrapper">
+        <img src="icon/custom/info.svg" alt="Info" class="info-icon">
+        <span class="tooltip-content">Dernière connexion : {{ lastConnexionLabel() }}</span>
+    </span>
     }
 </header>

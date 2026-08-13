@@ -1,4 +1,5 @@
-import { Component, OnInit, inject } from '@angular/core';
+import { Component, OnInit, computed, inject } from '@angular/core';
+import { format } from 'date-fns';
 import { AuthStateService } from '../../service/auth-state.service';
 
 @Component({
@@ -12,9 +13,26 @@ export class HeaderComponent implements OnInit {
 
     readonly currentUser = this.authStateService.currentUser;
 
+    readonly avatarInitial = computed(() => this.currentUser()?.username?.charAt(0).toUpperCase() ?? '');
+    readonly avatarColor = computed(() => this.stringToColor(this.currentUser()?.username ?? ''));
+
+    readonly lastConnexionLabel = computed(() => {
+        const lastConnexion = this.currentUser()?.lastConnexion;
+        return lastConnexion ? format(new Date(lastConnexion), 'dd/MM/yyyy à HH:mm') : 'Jamais connecté';
+    });
+
     ngOnInit(): void {
         if (!this.currentUser()) {
             this.authStateService.loadCurrentUser().subscribe();
         }
+    }
+
+    // deterministic pastel-ish color derived from the username so it stays stable across sessions
+    private stringToColor(value: string): string {
+        let hash = 0;
+        for (let i = 0; i < value.length; i++) {
+            hash = value.charCodeAt(i) + ((hash << 5) - hash);
+        }
+        return `hsl(${hash % 360}, 60%, 45%)`;
     }
 }

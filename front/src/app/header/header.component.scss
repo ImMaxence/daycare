@@ -4,3 +4,49 @@ header {
     color: var(--light-color);
     justify-content: flex-end;
 }
+
+.avatar {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    color: var(--light-color);
+    font-weight: 600;
+    font-size: 0.9rem;
+}
+
+.tooltip-wrapper {
+    position: relative;
+    display: flex;
+    align-items: center;
+    cursor: pointer;
+}
+
+.info-icon {
+    width: 20px;
+    height: 20px;
+    filter: invert(1);
+}
+
+.tooltip-content {
+    position: absolute;
+    top: 130%;
+    right: 0;
+    background-color: var(--dark-color);
+    color: var(--light-color);
+    padding: 6px 10px;
+    border-radius: var(--border-radius);
+    font-size: 0.8rem;
+    white-space: nowrap;
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.2s ease;
+    z-index: 10;
+}
+
+.tooltip-wrapper:hover .tooltip-content {
+    opacity: 1;
+    visibility: visible;
+}
