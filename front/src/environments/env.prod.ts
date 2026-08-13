@@ -1,4 +1,4 @@
 export const environment = {
     production: true,
-    apiUrl: 'https://api-daycare.ton-domaine.fr'
+    apiUrl: 'https://api-daycare.nailsbyanastasie.fr'
 };
