@@ -31,3 +31,10 @@ jwt:
   refresh-token-ttl-seconds: 604800 # 7 jours (7 * 24h)
   # Clé symétrique HMAC (HS256) : string brute, min. 32 caractères (256 bits)
   secret: ${JWT_SECRET:change-me-in-prod-with-a-32-bytes-secret}
+
+app:
+  default-user:
+    username: ${DEFAULT_USER_USERNAME:admin}
+    password: ${DEFAULT_USER_PASSWORD:admin123}
+
+
