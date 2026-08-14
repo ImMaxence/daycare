@@ -1,7 +1,8 @@
 import { HeaderComponent } from '../header/header.component';
 import { AfterViewInit, Component, ElementRef, ViewChild, OnDestroy, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-// must be imported before 'leaflet' so the prod build's namespace snapshot includes markerClusterGroup
+// sets globalThis.L before the plugin loads, must stay first
+import './leaflet-global';
 import 'leaflet.markercluster';
 import * as L from 'leaflet';
 import { DaycareService } from '../../service/api/api/daycare.service';
