@@ -1,0 +1,12 @@
+databaseChangeLog:
+  - changeSet:
+      id: 0003-purge-daycares-data
+      author: daycare
+      comment: >
+        Purge unique des données historiques de la table daycares (issues de l'ancienne
+        ingestion OSM) avant modification du schéma et réingestion propre via les CSV
+        monenfant.fr et FINESS par le DataInitializer.
+      changes:
+        - delete:
+            tableName: daycares
+

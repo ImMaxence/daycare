@@ -1,0 +1,37 @@
+databaseChangeLog:
+  - changeSet:
+      id: 0004-alter-daycares-fields
+      author: daycare
+      changes:
+        - dropColumn:
+            tableName: daycares
+            columnName: osm_id
+        - addColumn:
+            tableName: daycares
+            columns:
+              - column:
+                  name: external_id
+                  type: VARCHAR(64)
+                  constraints:
+                    nullable: true
+              - column:
+                  name: type
+                  type: VARCHAR(30)
+                  constraints:
+                    nullable: true
+              - column:
+                  name: department
+                  type: VARCHAR(10)
+                  constraints:
+                    nullable: true
+              - column:
+                  name: email
+                  type: VARCHAR(255)
+                  constraints:
+                    nullable: true
+              - column:
+                  name: website_url
+                  type: VARCHAR(500)
+                  constraints:
+                    nullable: true
+

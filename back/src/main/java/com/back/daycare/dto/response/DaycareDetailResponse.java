@@ -1,12 +1,14 @@
 package com.back.daycare.dto.response;
 
 import com.back.daycare.entity.DaycareStatus;
+import com.back.daycare.entity.EstablishmentType;
 
 import java.util.UUID;
 
 public record DaycareDetailResponse(
         UUID id,
-        Long osmId,
+        String externalId,
+        EstablishmentType type,
         String name,
         Double latitude,
         Double longitude,
@@ -14,7 +16,10 @@ public record DaycareDetailResponse(
         String street,
         String postcode,
         String city,
+        String department,
         String phone,
+        String email,
+        String websiteUrl,
         String operator,
         String siret,
         String note,

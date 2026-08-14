@@ -2,15 +2,15 @@ package com.back.daycare.config;
 
 import com.back.daycare.entity.Daycare;
 import com.back.daycare.entity.DaycareStatus;
+import com.back.daycare.entity.EstablishmentType;
 import com.back.daycare.entity.User;
 import com.back.daycare.repository.DaycareRepository;
 import com.back.daycare.repository.UserRepository;
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import lombok.Data;
-import lombok.NoArgsConstructor;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.csv.CSVFormat;
+import org.apache.commons.csv.CSVParser;
+import org.apache.commons.csv.CSVRecord;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.core.io.ClassPathResource;
@@ -19,11 +19,14 @@ import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 
-import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.Reader;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 import java.util.UUID;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 @Slf4j
 @Component
@@ -31,13 +34,21 @@ import java.util.UUID;
 public class DataInitializer implements CommandLineRunner {
 
     private static final int BATCH_SIZE = 500;
-    private static final String OSM_EXPORT_FILE = "export.json";
-    private static final String DEFAULT_SOURCE = "OSM";
+
+    private static final String MONENFANT_CSV_FILE = "daycares.geocoded.csv";
+    private static final String SOURCE_MONENFANT = "MONENFANT";
+
+    private static final String FINESS_CSV_FILE = "finess_geocoded_clean.csv";
+    private static final String SOURCE_FINESS = "FINESS";
+
+    // Ex: "20 LOT DES ALGUES 83120 STE MAXIME" -> voie / code postal / commune
+    private static final Pattern ADDRESS_PATTERN = Pattern.compile("^(.*?)\\s+(\\d{5})\\s+(.+)$");
+    // Ex: "20 LOT DES ALGUES" -> numéro / voie
+    private static final Pattern HOUSE_NUMBER_PATTERN = Pattern.compile("^(\\d+\\s*[A-Za-z]{0,3})\\s+(.+)$");
 
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
     private final DaycareRepository daycareRepository;
-    private final ObjectMapper objectMapper = new ObjectMapper();
 
     @Value("${app.default-user.username:admin}")
     private String defaultUsername;
@@ -69,88 +80,268 @@ public class DataInitializer implements CommandLineRunner {
 
     private void initDaycares() throws Exception {
         if (daycareRepository.count() > 0) {
-            log.info("Des crèches sont déjà présentes en base, ingestion de '{}' ignorée.", OSM_EXPORT_FILE);
+            log.info("Des établissements sont déjà présents en base, ingestion CSV ignorée.");
             return;
         }
 
-        OsmResponse osmResponse = loadOsmResponse();
-        List<OsmElement> elements = osmResponse.getElements() != null ? osmResponse.getElements() : List.of();
-        int totalElements = elements.size();
-
-        int generatedNameCount = 0;
-        int ignoredCount = 0;
         List<Daycare> daycaresToInsert = new ArrayList<>();
-
-        for (OsmElement element : elements) {
-            double[] coordinates = resolveCoordinates(element);
-            if (coordinates == null) {
-                ignoredCount++;
-                continue;
-            }
-
-            Map<String, String> tags = element.getTags() != null ? element.getTags() : Map.of();
-
-            String name = tags.get("name");
-            boolean nameGenerated = !StringUtils.hasText(name);
-            if (nameGenerated) {
-                name = "Inconnu - " + UUID.randomUUID();
-            }
-
-            String source = tags.getOrDefault("source", DEFAULT_SOURCE);
-
-            Daycare daycare = Daycare.builder()
-                    .osmId(element.getId())
-                    .name(name)
-                    .latitude(coordinates[0])
-                    .longitude(coordinates[1])
-                    .houseNumber(tags.get("addr:housenumber"))
-                    .street(tags.get("addr:street"))
-                    .postcode(tags.get("addr:postcode"))
-                    .city(tags.get("addr:city"))
-                    .phone(tags.get("phone"))
-                    .operator(tags.get("operator"))
-                    .siret(tags.get("ref:FR:SIRET"))
-                    .note(tags.get("note"))
-                    .source(source)
-                    .status(DaycareStatus.A_CONTACTER)
-                    .build();
-
-            daycaresToInsert.add(daycare);
-            if (nameGenerated) {
-                generatedNameCount++;
-            }
-        }
+        daycaresToInsert.addAll(loadFromMonEnfantCsv());
+        daycaresToInsert.addAll(loadFromFinessCsv());
 
         int insertedCount = saveInBatches(daycaresToInsert);
-
-        log.info("=== Rapport d'ingestion OSM ({}) ===", OSM_EXPORT_FILE);
-        log.info("Total d'objets présents dans le JSON                  : {}", totalElements);
-        log.info("Total de crèches insérées en base                     : {}", insertedCount);
-        log.info("Total de noms auto-générés (UUID)                     : {}", generatedNameCount);
-        log.info("Total d'objets ignorés (coordonnées non exploitables) : {}", ignoredCount);
+        log.info("=== Rapport d'ingestion global ===");
+        log.info("Total d'établissements insérés en base : {}", insertedCount);
     }
 
-    private OsmResponse loadOsmResponse() throws Exception {
-        ClassPathResource resource = new ClassPathResource(OSM_EXPORT_FILE);
-        try (InputStream inputStream = resource.getInputStream()) {
-            return objectMapper.readValue(inputStream, OsmResponse.class);
+    // ------------------------------------------------------------------
+    // monenfant.fr (daycares.geocoded.csv)
+    // ------------------------------------------------------------------
+
+    private List<Daycare> loadFromMonEnfantCsv() throws Exception {
+        List<Daycare> daycares = new ArrayList<>();
+        int ignoredCount = 0;
+        int total = 0;
+
+        CSVFormat format = CSVFormat.DEFAULT.builder()
+                .setHeader()
+                .setSkipHeaderRecord(true)
+                .setIgnoreEmptyLines(true)
+                .setTrim(true)
+                .build();
+
+        try (Reader reader = openResource(MONENFANT_CSV_FILE);
+             CSVParser parser = format.parse(reader)) {
+
+            for (CSVRecord record : parser) {
+                total++;
+
+                Double latitude = parseDouble(getField(record, "latitude"));
+                Double longitude = parseDouble(getField(record, "longitude"));
+                if (latitude == null || longitude == null) {
+                    ignoredCount++;
+                    continue;
+                }
+
+                String name = getField(record, "name");
+                if (!StringUtils.hasText(name)) {
+                    name = "Inconnu - " + UUID.randomUUID();
+                }
+
+                String postcode = firstNonBlank(getField(record, "result_postcode"));
+                String city = firstNonBlank(getField(record, "result_city"), getField(record, "commune"));
+
+                Daycare daycare = Daycare.builder()
+                        .externalId(getField(record, "id"))
+                        .type(parseMonEnfantType(getField(record, "type")))
+                        .name(name)
+                        .latitude(latitude)
+                        .longitude(longitude)
+                        .houseNumber(getField(record, "result_housenumber"))
+                        .street(getField(record, "result_street"))
+                        .postcode(postcode)
+                        .city(city)
+                        .department(departmentFromPostcode(postcode))
+                        .phone(firstNonBlank(getField(record, "phone"), getField(record, "phone2")))
+                        .email(getField(record, "mail"))
+                        .websiteUrl(getField(record, "siteWeb"))
+                        .source(SOURCE_MONENFANT)
+                        .status(DaycareStatus.A_CONTACTER)
+                        .build();
+
+                daycares.add(daycare);
+            }
+        }
+
+        log.info("=== Rapport d'ingestion monenfant.fr ({}) ===", MONENFANT_CSV_FILE);
+        log.info("Total de lignes lues                                  : {}", total);
+        log.info("Total d'établissements retenus                        : {}", daycares.size());
+        log.info("Total de lignes ignorées (coordonnées manquantes)     : {}", ignoredCount);
+
+        return daycares;
+    }
+
+    private EstablishmentType parseMonEnfantType(String rawType) {
+        if (!StringUtils.hasText(rawType)) {
+            return EstablishmentType.AUTRE;
+        }
+        try {
+            return EstablishmentType.valueOf(rawType.trim().toUpperCase());
+        } catch (IllegalArgumentException ex) {
+            log.warn("Type monenfant.fr inconnu '{}', valeur AUTRE utilisée.", rawType);
+            return EstablishmentType.AUTRE;
         }
     }
 
-    private double[] resolveCoordinates(OsmElement element) {
-        if (element.getLat() != null && element.getLon() != null) {
-            return new double[] { element.getLat(), element.getLon() };
+    // ------------------------------------------------------------------
+    // FINESS (finess_geocoded_clean.csv)
+    // ------------------------------------------------------------------
+
+    private List<Daycare> loadFromFinessCsv() throws Exception {
+        List<Daycare> daycares = new ArrayList<>();
+        int ignoredCount = 0;
+        int total = 0;
+
+        CSVFormat format = CSVFormat.DEFAULT.builder()
+                .setDelimiter(';')
+                .setHeader()
+                .setSkipHeaderRecord(true)
+                .setIgnoreEmptyLines(true)
+                .setTrim(true)
+                .build();
+
+        try (Reader reader = openResource(FINESS_CSV_FILE);
+             CSVParser parser = format.parse(reader)) {
+
+            for (CSVRecord record : parser) {
+                total++;
+
+                Double latitude = parseDouble(getField(record, "latitude"));
+                Double longitude = parseDouble(getField(record, "longitude"));
+                if (latitude == null || longitude == null) {
+                    ignoredCount++;
+                    continue;
+                }
+
+                String name = getField(record, "name");
+                if (!StringUtils.hasText(name)) {
+                    name = "Inconnu - " + UUID.randomUUID();
+                }
+
+                String[] parsedAddress = parseAddress(getField(record, "address"));
+                String department = normalizeDepartment(getField(record, "department"));
+
+                Daycare daycare = Daycare.builder()
+                        .externalId(getField(record, "id"))
+                        .type(parseFinessCategory(getField(record, "category")))
+                        .name(name)
+                        .latitude(latitude)
+                        .longitude(longitude)
+                        .houseNumber(parsedAddress[0])
+                        .street(parsedAddress[1])
+                        .postcode(parsedAddress[2])
+                        .city(parsedAddress[3])
+                        .department(department)
+                        .source(SOURCE_FINESS)
+                        .status(DaycareStatus.A_CONTACTER)
+                        .build();
+
+                daycares.add(daycare);
+            }
         }
 
-        Bounds bounds = element.getBounds();
-        if (bounds != null && bounds.getMinlat() != null && bounds.getMaxlat() != null
-                && bounds.getMinlon() != null && bounds.getMaxlon() != null) {
-            double centerLat = (bounds.getMinlat() + bounds.getMaxlat()) / 2.0;
-            double centerLon = (bounds.getMinlon() + bounds.getMaxlon()) / 2.0;
-            return new double[] { centerLat, centerLon };
+        log.info("=== Rapport d'ingestion FINESS ({}) ===", FINESS_CSV_FILE);
+        log.info("Total de lignes lues                                  : {}", total);
+        log.info("Total d'établissements retenus                        : {}", daycares.size());
+        log.info("Total de lignes ignorées (coordonnées manquantes)     : {}", ignoredCount);
+
+        return daycares;
+    }
+
+    private EstablishmentType parseFinessCategory(String category) {
+        if (!StringUtils.hasText(category)) {
+            return EstablishmentType.AUTRE;
+        }
+        return switch (category.trim()) {
+            case "166" -> EstablishmentType.CENTRE_MATERNEL;
+            case "176" -> EstablishmentType.VILLAGE_ENFANTS;
+            case "177" -> EstablishmentType.MECS;
+            case "223" -> EstablishmentType.PMI;
+            case "355" -> EstablishmentType.CENTRE_HOSPITALIER;
+            default -> {
+                log.warn("Catégorie FINESS inconnue '{}', valeur AUTRE utilisée.", category);
+                yield EstablishmentType.AUTRE;
+            }
+        };
+    }
+
+    private String normalizeDepartment(String rawDepartment) {
+        if (!StringUtils.hasText(rawDepartment)) {
+            return null;
+        }
+        String trimmed = rawDepartment.trim();
+        if (trimmed.length() == 1) {
+            return "0" + trimmed;
+        }
+        return trimmed;
+    }
+
+    /**
+     * Découpe une adresse à plat (ex: "20 LOT DES ALGUES 83120 STE MAXIME")
+     * en numéro de voie, voie, code postal et commune.
+     */
+    private String[] parseAddress(String rawAddress) {
+        if (!StringUtils.hasText(rawAddress)) {
+            return new String[] { null, null, null, null };
         }
 
+        String address = rawAddress.trim();
+        Matcher addressMatcher = ADDRESS_PATTERN.matcher(address);
+        if (!addressMatcher.matches()) {
+            return new String[] { null, address, null, null };
+        }
+
+        String streetPart = addressMatcher.group(1).trim();
+        String postcode = addressMatcher.group(2).trim();
+        String city = addressMatcher.group(3).trim();
+
+        Matcher houseNumberMatcher = HOUSE_NUMBER_PATTERN.matcher(streetPart);
+        if (houseNumberMatcher.matches()) {
+            return new String[] {
+                    houseNumberMatcher.group(1).trim(),
+                    houseNumberMatcher.group(2).trim(),
+                    postcode,
+                    city
+            };
+        }
+
+        return new String[] { null, streetPart, postcode, city };
+    }
+
+    // ------------------------------------------------------------------
+    // Utilitaires communs
+    // ------------------------------------------------------------------
+
+    private Reader openResource(String fileName) throws Exception {
+        ClassPathResource resource = new ClassPathResource(fileName);
+        return new InputStreamReader(resource.getInputStream(), StandardCharsets.UTF_8);
+    }
+
+    private String getField(CSVRecord record, String name) {
+        if (!record.isMapped(name)) {
+            return null;
+        }
+        String value = record.get(name);
+        return StringUtils.hasText(value) ? value.trim() : null;
+    }
+
+    private String firstNonBlank(String... values) {
+        for (String value : values) {
+            if (StringUtils.hasText(value)) {
+                return value;
+            }
+        }
         return null;
+    }
+
+    private Double parseDouble(String value) {
+        if (!StringUtils.hasText(value)) {
+            return null;
+        }
+        try {
+            return Double.parseDouble(value.trim());
+        } catch (NumberFormatException ex) {
+            return null;
+        }
+    }
+
+    private String departmentFromPostcode(String postcode) {
+        if (!StringUtils.hasText(postcode) || postcode.length() < 2) {
+            return null;
+        }
+        if (postcode.startsWith("97") || postcode.startsWith("98")) {
+            return postcode.length() >= 3 ? postcode.substring(0, 3) : postcode.substring(0, 2);
+        }
+        return postcode.substring(0, 2);
     }
 
     private int saveInBatches(List<Daycare> daycares) {
@@ -161,35 +352,6 @@ public class DataInitializer implements CommandLineRunner {
             inserted += batch.size();
         }
         return inserted;
-    }
-
-    @Data
-    @NoArgsConstructor
-    @JsonIgnoreProperties(ignoreUnknown = true)
-    static class OsmResponse {
-        private List<OsmElement> elements;
-    }
-
-    @Data
-    @NoArgsConstructor
-    @JsonIgnoreProperties(ignoreUnknown = true)
-    static class OsmElement {
-        private String type;
-        private Long id;
-        private Double lat;
-        private Double lon;
-        private Bounds bounds;
-        private Map<String, String> tags;
-    }
-
-    @Data
-    @NoArgsConstructor
-    @JsonIgnoreProperties(ignoreUnknown = true)
-    static class Bounds {
-        private Double minlat;
-        private Double minlon;
-        private Double maxlat;
-        private Double maxlon;
     }
 }
 

@@ -4,12 +4,14 @@ import com.back.daycare.dto.response.DaycareDetailResponse;
 import com.back.daycare.dto.response.MapDaycareResponse;
 import com.back.daycare.entity.Daycare;
 import com.back.daycare.entity.DaycareStatus;
+import com.back.daycare.entity.EstablishmentType;
 import com.back.daycare.exception.ResourceNotFoundException;
 import com.back.daycare.mapper.DaycareMapper;
 import com.back.daycare.repository.DaycareRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.StringUtils;
 
 import java.util.List;
 import java.util.UUID;
@@ -30,6 +32,11 @@ public class DaycareService {
         return daycareRepository.findById(id)
                 .map(daycareMapper::toDto)
                 .orElseThrow(() -> new ResourceNotFoundException("Crèche introuvable : " + id));
+    }
+
+    public List<DaycareDetailResponse> search(EstablishmentType type, DaycareStatus status, String name) {
+        String normalizedName = StringUtils.hasText(name) ? name.trim() : null;
+        return daycareMapper.toDto(daycareRepository.search(type, status, normalizedName));
     }
 
     @Transactional

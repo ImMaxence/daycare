@@ -29,8 +29,12 @@ public class Daycare {
     @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;
 
-    @Column(name = "osm_id")
-    private Long osmId;
+    @Column(name = "external_id")
+    private String externalId;
+
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private EstablishmentType type;
 
     @Column(nullable = false)
     private String name;
@@ -48,7 +52,14 @@ public class Daycare {
 
     private String city;
 
+    private String department;
+
     private String phone;
+
+    private String email;
+
+    @Column(name = "website_url")
+    private String websiteUrl;
 
     private String operator;
 
