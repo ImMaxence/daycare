@@ -1,8 +1,9 @@
 import { HeaderComponent } from '../header/header.component';
 import { AfterViewInit, Component, ElementRef, ViewChild, OnDestroy, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import * as L from 'leaflet';
+// must be imported before 'leaflet' so the prod build's namespace snapshot includes markerClusterGroup
 import 'leaflet.markercluster';
+import * as L from 'leaflet';
 import { DaycareService } from '../../service/api/api/daycare.service';
 import { MapDaycareResponse } from '../../service/api/model/mapDaycareResponse';
 import { DaycareDetailResponse } from '../../service/api/model/daycareDetailResponse';
