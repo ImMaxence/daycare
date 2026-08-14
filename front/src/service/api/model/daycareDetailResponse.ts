@@ -11,7 +11,8 @@
 
 export interface DaycareDetailResponse { 
     id?: string;
-    osmId?: number;
+    externalId?: string;
+    type?: DaycareDetailResponse.TypeEnum;
     name?: string;
     latitude?: number;
     longitude?: number;
@@ -19,7 +20,10 @@ export interface DaycareDetailResponse {
     street?: string;
     postcode?: string;
     city?: string;
+    department?: string;
     phone?: string;
+    email?: string;
+    websiteUrl?: string;
     operator?: string;
     siret?: string;
     note?: string;
@@ -27,6 +31,19 @@ export interface DaycareDetailResponse {
     status?: DaycareDetailResponse.StatusEnum;
 }
 export namespace DaycareDetailResponse {
+    export const TypeEnum = {
+        Eaje: 'EAJE',
+        Alsh: 'ALSH',
+        Rpe: 'RPE',
+        Laep: 'LAEP',
+        Mecs: 'MECS',
+        CentreMaternel: 'CENTRE_MATERNEL',
+        VillageEnfants: 'VILLAGE_ENFANTS',
+        Pmi: 'PMI',
+        CentreHospitalier: 'CENTRE_HOSPITALIER',
+        Autre: 'AUTRE'
+    } as const;
+    export type TypeEnum = typeof TypeEnum[keyof typeof TypeEnum];
     export const StatusEnum = {
         AContacter: 'A_CONTACTER',
         Contacte: 'CONTACTE',

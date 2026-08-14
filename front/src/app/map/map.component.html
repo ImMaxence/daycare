@@ -15,34 +15,164 @@
         <aside class="info-panel">
             @if (selectedDaycare(); as daycare) {
             <button type="button" class="close-btn" (click)="closePanel()">×</button>
-            <h2>{{ daycare.name }}</h2>
-            <p class="address">
-                {{ daycare.houseNumber }} {{ daycare.street }}<br />
-                {{ daycare.postcode }} {{ daycare.city }}
-            </p>
-            @if (daycare.phone) {
-            <p><strong>Téléphone :</strong> {{ daycare.phone }}</p>
-            }
-            @if (daycare.operator) {
-            <p><strong>Opérateur :</strong> {{ daycare.operator }}</p>
-            }
-            @if (daycare.note) {
-            <p><strong>Note :</strong> {{ daycare.note }}</p>
-            }
 
-            <a class="gmaps-btn" [href]="googleMapsUrl(daycare)" target="_blank" rel="noopener noreferrer">
-                Voir dans Google Maps
-            </a>
+            <div class="panel-header">
+                <span class="type-badge">{{ typeLabel(daycare.type) }}</span>
+                <h2>{{ daycare.name }}</h2>
+            </div>
 
-            <label class="status-label" for="status-select">Statut</label>
+            <label class="field-label" for="status-select">Statut</label>
             <select id="status-select" name="status" [ngModel]="daycare.status"
                 (ngModelChange)="onStatusChange($event)">
                 @for (entry of legendEntries; track entry.status) {
                 <option [value]="entry.status">{{ entry.label }}</option>
                 }
             </select>
+
+            <dl class="detail-fields">
+                <div class="field">
+                    <dt>Adresse</dt>
+                    <dd>
+                        {{ daycare.houseNumber }} {{ daycare.street }}<br />
+                        {{ daycare.postcode }} {{ daycare.city }}
+                        @if (daycare.department) {
+                        <span class="muted"> ({{ daycare.department }})</span>
+                        }
+                    </dd>
+                </div>
+                <div class="field">
+                    <dt>Téléphone</dt>
+                    <dd>
+                        @if (daycare.phone) {
+                        <a [href]="'tel:' + daycare.phone">{{ daycare.phone }}</a>
+                        } @else {
+                        <span class="muted">Non renseigné</span>
+                        }
+                    </dd>
+                </div>
+                <div class="field">
+                    <dt>Email</dt>
+                    <dd>
+                        @if (daycare.email) {
+                        <a [href]="'mailto:' + daycare.email">{{ daycare.email }}</a>
+                        } @else {
+                        <span class="muted">Non renseigné</span>
+                        }
+                    </dd>
+                </div>
+                <div class="field">
+                    <dt>Site web</dt>
+                    <dd>
+                        @if (daycare.websiteUrl) {
+                        <a [href]="daycare.websiteUrl" target="_blank" rel="noopener noreferrer">{{ daycare.websiteUrl
+                            }}</a>
+                        } @else {
+                        <span class="muted">Non renseigné</span>
+                        }
+                    </dd>
+                </div>
+                <div class="field">
+                    <dt>Opérateur</dt>
+                    <dd>
+                        @if (daycare.operator) {
+                        {{ daycare.operator }}
+                        } @else {
+                        <span class="muted">Non renseigné</span>
+                        }
+                    </dd>
+                </div>
+                <div class="field">
+                    <dt>SIRET</dt>
+                    <dd>
+                        @if (daycare.siret) {
+                        {{ daycare.siret }}
+                        } @else {
+                        <span class="muted">Non renseigné</span>
+                        }
+                    </dd>
+                </div>
+                <div class="field">
+                    <dt>Source</dt>
+                    <dd>
+                        @if (daycare.source) {
+                        {{ daycare.source }}
+                        } @else {
+                        <span class="muted">Non renseigné</span>
+                        }
+                    </dd>
+                </div>
+                <div class="field">
+                    <dt>Note</dt>
+                    <dd>
+                        @if (daycare.note) {
+                        {{ daycare.note }}
+                        } @else {
+                        <span class="muted">Aucune note</span>
+                        }
+                    </dd>
+                </div>
+                <div class="field">
+                    <dt>Coordonnées</dt>
+                    <dd>{{ daycare.latitude }}, {{ daycare.longitude }}</dd>
+                </div>
+                <div class="field">
+                    <dt>Identifiants</dt>
+                    <dd class="muted small">
+                        {{ daycare.id }}<br />
+                        @if (daycare.externalId) {
+                        externe : {{ daycare.externalId }}
+                        }
+                    </dd>
+                </div>
+            </dl>
+
+            <a class="gmaps-btn" [href]="googleMapsUrl(daycare)" target="_blank" rel="noopener noreferrer">
+                Voir dans Google Maps
+            </a>
             } @else {
-            <p class="placeholder">Cliquez sur un point de la carte pour afficher ses informations</p>
+            <h2>Rechercher</h2>
+            <label class="field-label" for="search-name">Nom</label>
+            <input id="search-name" name="search-name" type="text" [ngModel]="searchName()"
+                (ngModelChange)="searchName.set($event)" placeholder="Nom de la structure" />
+
+            <label class="field-label" for="search-type">Type</label>
+            <select id="search-type" name="search-type" [ngModel]="searchType()"
+                (ngModelChange)="searchType.set($event)">
+                <option value="">Tous</option>
+                @for (entry of typeEntries; track entry.type) {
+                <option [value]="entry.type">{{ entry.label }}</option>
+                }
+            </select>
+
+            <label class="field-label" for="search-status">Statut</label>
+            <select id="search-status" name="search-status" [ngModel]="searchStatus()"
+                (ngModelChange)="searchStatus.set($event)">
+                <option value="">Tous</option>
+                @for (entry of legendEntries; track entry.status) {
+                <option [value]="entry.status">{{ entry.label }}</option>
+                }
+            </select>
+
+            <div class="search-actions">
+                <button type="button" class="primary-btn" (click)="search()">Rechercher</button>
+                <button type="button" class="secondary-btn" (click)="resetSearch()">Réinitialiser</button>
+            </div>
+
+            @if (searchLoading()) {
+            <p class="placeholder">Recherche en cours…</p>
+            } @else if (searchResults().length) {
+            <p class="results-count">{{ searchResults().length }} résultat(s)</p>
+            <ul class="search-results">
+                @for (result of searchResults(); track result.id) {
+                <li class="search-result-item" (click)="selectSearchResult(result)">
+                    <span class="search-result-name">{{ result.name }}</span>
+                    <span class="search-result-address">{{ result.postcode }} {{ result.city }}</span>
+                </li>
+                }
+            </ul>
+            } @else {
+            <p class="placeholder">Aucun résultat</p>
+            }
             }
         </aside>
     </div>

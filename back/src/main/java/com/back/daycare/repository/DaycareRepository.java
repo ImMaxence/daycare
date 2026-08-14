@@ -20,7 +20,7 @@ public interface DaycareRepository extends JpaRepository<Daycare, UUID> {
             SELECT d FROM Daycare d
             WHERE (:type IS NULL OR d.type = :type)
             AND (:status IS NULL OR d.status = :status)
-            AND (:name IS NULL OR LOWER(d.name) LIKE LOWER(CONCAT('%', :name, '%')))
+            AND (:name IS NULL OR LOWER(d.name) LIKE LOWER(CONCAT('%', CAST(:name AS string), '%')))
             """)
     List<Daycare> search(@Param("type") EstablishmentType type,
                           @Param("status") DaycareStatus status,

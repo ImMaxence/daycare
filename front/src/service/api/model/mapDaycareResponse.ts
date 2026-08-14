@@ -13,9 +13,23 @@ export interface MapDaycareResponse {
     id?: string;
     latitude?: number;
     longitude?: number;
+    type?: MapDaycareResponse.TypeEnum;
     status?: MapDaycareResponse.StatusEnum;
 }
 export namespace MapDaycareResponse {
+    export const TypeEnum = {
+        Eaje: 'EAJE',
+        Alsh: 'ALSH',
+        Rpe: 'RPE',
+        Laep: 'LAEP',
+        Mecs: 'MECS',
+        CentreMaternel: 'CENTRE_MATERNEL',
+        VillageEnfants: 'VILLAGE_ENFANTS',
+        Pmi: 'PMI',
+        CentreHospitalier: 'CENTRE_HOSPITALIER',
+        Autre: 'AUTRE'
+    } as const;
+    export type TypeEnum = typeof TypeEnum[keyof typeof TypeEnum];
     export const StatusEnum = {
         AContacter: 'A_CONTACTER',
         Contacte: 'CONTACTE',

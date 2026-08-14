@@ -49,47 +49,112 @@
 
 .info-panel {
     position: relative;
-    width: 320px;
+    width: 380px;
     flex-shrink: 0;
-    padding: var(--padding-component);
+    padding: 24px 20px;
     background-color: var(--background-color);
     border-left: var(--border-component);
     overflow-y: auto;
 
     h2 {
         color: var(--secondary-color);
-        margin-top: 0;
+        margin: 0;
+        font-size: 1.25rem;
     }
+}
 
-    .address {
-        color: var(--dark-color);
-    }
+.panel-header {
+    margin-right: 24px;
+    margin-bottom: 16px;
+}
+
+.type-badge {
+    display: inline-block;
+    margin-bottom: 6px;
+    padding: 3px 10px;
+    border-radius: 999px;
+    background-color: var(--secondary-color);
+    color: #fff;
+    font-size: 0.7rem;
+    font-weight: 700;
+    letter-spacing: 0.03em;
+    text-transform: uppercase;
 }
 
 .close-btn {
     position: absolute;
-    top: 8px;
-    right: 8px;
+    top: 16px;
+    right: 16px;
+    width: 28px;
+    height: 28px;
     border: none;
+    border-radius: 50%;
     background: none;
     color: var(--secondary-color);
-    font-size: 1.5rem;
+    font-size: 1.3rem;
     line-height: 1;
     cursor: pointer;
+
+    &:hover {
+        background-color: rgba(0, 0, 0, 0.06);
+    }
 }
 
-.status-label {
+.field-label {
     display: block;
-    margin-top: 16px;
     margin-bottom: 4px;
     font-weight: 600;
+    font-size: 0.85rem;
     color: var(--secondary-color);
+}
+
+.detail-fields {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    margin: 20px 0 0;
+    padding: 16px 0 0;
+    border-top: var(--border-component);
+}
+
+.field {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+
+    dt {
+        font-size: 0.72rem;
+        font-weight: 700;
+        letter-spacing: 0.03em;
+        text-transform: uppercase;
+        color: var(--dark-color);
+        opacity: 0.7;
+    }
+
+    dd {
+        margin: 0;
+        color: var(--secondary-color);
+        word-break: break-word;
+
+        a {
+            color: var(--secondary-color);
+        }
+    }
+}
+
+.muted {
+    color: var(--dark-color);
+    opacity: 0.75;
+}
+
+.small {
+    font-size: 0.75rem;
 }
 
 .gmaps-btn {
-    display: inline-block;
-    margin-top: 12px;
-    padding: 8px 12px;
+    display: block;
+    margin-top: 20px;
+    padding: 10px 12px;
     border: var(--border-component);
     border-radius: 6px;
     color: var(--secondary-color);
@@ -103,15 +168,110 @@
     }
 }
 
-select {
+select,
+input[type='text'] {
     width: 100%;
-    padding: 8px;
+    box-sizing: border-box;
+    padding: 8px 10px;
+    margin-bottom: 12px;
     border-radius: 6px;
     border: var(--border-component);
     background-color: #fff;
+    font-family: inherit;
+    font-size: 0.9rem;
+
+    &:focus {
+        outline: none;
+        border-color: var(--secondary-color);
+    }
+}
+
+.search-actions {
+    display: flex;
+    gap: 8px;
+    margin-top: 4px;
+}
+
+.primary-btn,
+.secondary-btn {
+    flex: 1;
+    padding: 10px 12px;
+    border-radius: 6px;
+    font-weight: 600;
+    font-family: inherit;
+    font-size: 0.9rem;
+    cursor: pointer;
+    text-align: center;
+}
+
+.primary-btn {
+    border: none;
+    background-color: var(--secondary-color);
+    color: #fff;
+
+    &:hover {
+        opacity: 0.9;
+    }
+}
+
+.secondary-btn {
+    border: var(--border-component);
+    background: none;
+    color: var(--secondary-color);
+
+    &:hover {
+        background-color: rgba(0, 0, 0, 0.06);
+    }
+}
+
+.results-count {
+    margin: 18px 0 8px;
+    font-size: 0.8rem;
+    color: var(--dark-color);
+    opacity: 0.75;
 }
 
 .placeholder {
+    margin-top: 18px;
     color: var(--dark-color);
     font-style: italic;
+}
+
+.search-results {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.search-result-item {
+    display: flex;
+    flex-direction: column;
+    padding: 10px 12px;
+    border: var(--border-component);
+    border-radius: 6px;
+    cursor: pointer;
+    transition: background-color 0.15s ease, color 0.15s ease;
+
+    &:hover {
+        background-color: var(--secondary-color);
+        color: #fff;
+
+        .search-result-name,
+        .search-result-address {
+            color: #fff;
+        }
+    }
+}
+
+.search-result-name {
+    font-weight: 600;
+    color: var(--secondary-color);
+}
+
+.search-result-address {
+    font-size: 0.85rem;
+    color: var(--dark-color);
 }

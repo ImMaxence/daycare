@@ -146,6 +146,90 @@ export class DaycareService extends BaseService {
     }
 
     /**
+     * @endpoint get /api/daycares/search
+     * @param type 
+     * @param status 
+     * @param name 
+     * @param observe set whether or not to return the data Observable as the body, response or events. defaults to returning the body.
+     * @param reportProgress flag to report request and response progress.
+     * @param options additional options
+     */
+    public searchDaycares(type?: 'EAJE' | 'ALSH' | 'RPE' | 'LAEP' | 'MECS' | 'CENTRE_MATERNEL' | 'VILLAGE_ENFANTS' | 'PMI' | 'CENTRE_HOSPITALIER' | 'AUTRE', status?: 'A_CONTACTER' | 'CONTACTE' | 'ENTRETIEN' | 'ACCEPTE' | 'REFUSE', name?: string, observe?: 'body', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<Array<DaycareDetailResponse>>;
+    public searchDaycares(type?: 'EAJE' | 'ALSH' | 'RPE' | 'LAEP' | 'MECS' | 'CENTRE_MATERNEL' | 'VILLAGE_ENFANTS' | 'PMI' | 'CENTRE_HOSPITALIER' | 'AUTRE', status?: 'A_CONTACTER' | 'CONTACTE' | 'ENTRETIEN' | 'ACCEPTE' | 'REFUSE', name?: string, observe?: 'response', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpResponse<Array<DaycareDetailResponse>>>;
+    public searchDaycares(type?: 'EAJE' | 'ALSH' | 'RPE' | 'LAEP' | 'MECS' | 'CENTRE_MATERNEL' | 'VILLAGE_ENFANTS' | 'PMI' | 'CENTRE_HOSPITALIER' | 'AUTRE', status?: 'A_CONTACTER' | 'CONTACTE' | 'ENTRETIEN' | 'ACCEPTE' | 'REFUSE', name?: string, observe?: 'events', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpEvent<Array<DaycareDetailResponse>>>;
+    public searchDaycares(type?: 'EAJE' | 'ALSH' | 'RPE' | 'LAEP' | 'MECS' | 'CENTRE_MATERNEL' | 'VILLAGE_ENFANTS' | 'PMI' | 'CENTRE_HOSPITALIER' | 'AUTRE', status?: 'A_CONTACTER' | 'CONTACTE' | 'ENTRETIEN' | 'ACCEPTE' | 'REFUSE', name?: string, observe: any = 'body', reportProgress: boolean = false, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<any> {
+
+        let localVarQueryParameters = new OpenApiHttpParams(this.encoder);
+
+        localVarQueryParameters = this.addToHttpParams(
+            localVarQueryParameters,
+            'type',
+            <any>type,
+            QueryParamStyle.Form,
+            true,
+        );
+
+
+        localVarQueryParameters = this.addToHttpParams(
+            localVarQueryParameters,
+            'status',
+            <any>status,
+            QueryParamStyle.Form,
+            true,
+        );
+
+
+        localVarQueryParameters = this.addToHttpParams(
+            localVarQueryParameters,
+            'name',
+            <any>name,
+            QueryParamStyle.Form,
+            true,
+        );
+
+
+        let localVarHeaders = this.defaultHeaders;
+
+        const localVarHttpHeaderAcceptSelected: string | undefined = options?.httpHeaderAccept ?? this.configuration.selectHeaderAccept([
+            'application/json'
+        ]);
+        if (localVarHttpHeaderAcceptSelected !== undefined) {
+            localVarHeaders = localVarHeaders.set('Accept', localVarHttpHeaderAcceptSelected);
+        }
+
+        const localVarHttpContext: HttpContext = options?.context ?? new HttpContext();
+
+        const localVarTransferCache: boolean = options?.transferCache ?? true;
+
+
+        let responseType_: 'text' | 'json' | 'blob' = 'json';
+        if (localVarHttpHeaderAcceptSelected) {
+            if (localVarHttpHeaderAcceptSelected.startsWith('text')) {
+                responseType_ = 'text';
+            } else if (this.configuration.isJsonMime(localVarHttpHeaderAcceptSelected)) {
+                responseType_ = 'json';
+            } else {
+                responseType_ = 'blob';
+            }
+        }
+
+        let localVarPath = `/api/daycares/search`;
+        const { basePath, withCredentials } = this.configuration;
+        return this.httpClient.request<Array<DaycareDetailResponse>>('get', `${basePath}${localVarPath}`,
+            {
+                context: localVarHttpContext,
+                params: localVarQueryParameters.toHttpParams(),
+                responseType: <any>responseType_,
+                ...(withCredentials ? { withCredentials } : {}),
+                headers: localVarHeaders,
+                observe: observe,
+                ...(localVarTransferCache !== undefined ? { transferCache: localVarTransferCache } : {}),
+                reportProgress: reportProgress
+            }
+        );
+    }
+
+    /**
      * @endpoint patch /api/daycares/{id}/status
      * @param id 
      * @param statusUpdateRequest 

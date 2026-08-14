@@ -8,6 +8,7 @@ import { DaycareDetailResponse } from '../../service/api/model/daycareDetailResp
 import { StatusUpdateRequest } from '../../service/api/model/statusUpdateRequest';
 
 type StatusEnum = MapDaycareResponse.StatusEnum;
+type TypeEnum = MapDaycareResponse.TypeEnum;
 
 const FRANCE_CENTER: L.LatLngTuple = [46.6034, 1.8883];
 
@@ -17,6 +18,19 @@ const STATUS_META: Record<StatusEnum, { label: string; color: string }> = {
     [MapDaycareResponse.StatusEnum.Entretien]: { label: 'Entretien', color: '#F59E0B' },
     [MapDaycareResponse.StatusEnum.Accepte]: { label: 'Accepté', color: '#10B981' },
     [MapDaycareResponse.StatusEnum.Refuse]: { label: 'Refusé', color: '#EF4444' },
+};
+
+const TYPE_META: Record<TypeEnum, { label: string }> = {
+    [MapDaycareResponse.TypeEnum.Eaje]: { label: 'EAJE' },
+    [MapDaycareResponse.TypeEnum.Alsh]: { label: 'ALSH' },
+    [MapDaycareResponse.TypeEnum.Rpe]: { label: 'RPE' },
+    [MapDaycareResponse.TypeEnum.Laep]: { label: 'LAEP' },
+    [MapDaycareResponse.TypeEnum.Mecs]: { label: 'MECS' },
+    [MapDaycareResponse.TypeEnum.CentreMaternel]: { label: 'Centre maternel' },
+    [MapDaycareResponse.TypeEnum.VillageEnfants]: { label: 'Village d\'enfants' },
+    [MapDaycareResponse.TypeEnum.Pmi]: { label: 'PMI' },
+    [MapDaycareResponse.TypeEnum.CentreHospitalier]: { label: 'Centre hospitalier' },
+    [MapDaycareResponse.TypeEnum.Autre]: { label: 'Autre' },
 };
 
 @Component({
@@ -35,6 +49,16 @@ export class MapComponent implements AfterViewInit, OnDestroy {
         status: status as StatusEnum,
         ...meta,
     }));
+    readonly typeEntries = Object.entries(TYPE_META).map(([type, meta]) => ({
+        type: type as TypeEnum,
+        ...meta,
+    }));
+
+    readonly searchName = signal('');
+    readonly searchType = signal<TypeEnum | ''>('');
+    readonly searchStatus = signal<StatusEnum | ''>('');
+    readonly searchResults = signal<DaycareDetailResponse[]>([]);
+    readonly searchLoading = signal(false);
 
     constructor(private readonly daycareService: DaycareService) { }
 
@@ -104,6 +128,10 @@ export class MapComponent implements AfterViewInit, OnDestroy {
         return `https://www.google.com/maps/search/?api=1&query=${daycare.latitude},${daycare.longitude}`;
     }
 
+    typeLabel(type: TypeEnum | undefined): string {
+        return type ? TYPE_META[type].label : 'Non renseigné';
+    }
+
     onStatusChange(status: StatusEnum): void {
         const daycare = this.selectedDaycare();
         if (!daycare?.id) {
@@ -120,5 +148,52 @@ export class MapComponent implements AfterViewInit, OnDestroy {
 
     closePanel(): void {
         this.selectedDaycare.set(null);
+    }
+
+    search(): void {
+        this.searchLoading.set(true);
+        this.daycareService
+            .searchDaycares(this.searchType() || undefined, this.searchStatus() || undefined, this.searchName() || undefined)
+            .subscribe({
+                next: (results) => {
+                    this.searchResults.set(results);
+                    this.searchLoading.set(false);
+                    this.applySearchHighlight(results);
+                },
+                error: () => this.searchLoading.set(false),
+            });
+    }
+
+    resetSearch(): void {
+        this.searchName.set('');
+        this.searchType.set('');
+        this.searchStatus.set('');
+        this.searchResults.set([]);
+        this.highlightMarkers(new Set());
+    }
+
+    selectSearchResult(daycare: DaycareDetailResponse): void {
+        this.selectedDaycare.set(daycare);
+        if (daycare.latitude !== undefined && daycare.longitude !== undefined) {
+            this.map?.flyTo([daycare.latitude, daycare.longitude], Math.max(this.map.getZoom(), 12));
+        }
+    }
+
+    private applySearchHighlight(results: DaycareDetailResponse[]): void {
+        const ids = new Set(results.map((result) => result.id).filter((id): id is string => !!id));
+        this.highlightMarkers(ids);
+
+        const points = results
+            .filter((result) => result.latitude !== undefined && result.longitude !== undefined)
+            .map((result) => [result.latitude!, result.longitude!] as L.LatLngTuple);
+        if (points.length && this.map) {
+            this.map.fitBounds(L.latLngBounds(points), { padding: [40, 40], maxZoom: 13 });
+        }
+    }
+
+    private highlightMarkers(ids: Set<string>): void {
+        this.markers.forEach((marker, id) => {
+            marker.setOpacity(ids.size === 0 || ids.has(id) ? 1 : 0.15);
+        });
     }
 }
