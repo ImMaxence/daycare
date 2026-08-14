@@ -10,10 +10,11 @@
     <packaging>jar</packaging>
 
     <properties>
-        <maven.compiler.release>21</maven.compiler.release>
+        <maven.compiler.release>26</maven.compiler.release>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <playwright.version>1.62.0</playwright.version>
         <jackson.version>2.22.1</jackson.version>
+        <proj4j.version>1.1.5</proj4j.version>
         <exec.mainClass>com.daycare.Main</exec.mainClass>
     </properties>
 
@@ -27,6 +28,11 @@
             <groupId>com.fasterxml.jackson.core</groupId>
             <artifactId>jackson-databind</artifactId>
             <version>${jackson.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.locationtech.proj4j</groupId>
+            <artifactId>proj4j</artifactId>
+            <version>${proj4j.version}</version>
         </dependency>
     </dependencies>
 

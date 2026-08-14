@@ -2,6 +2,8 @@ https://adresse.data.gouv.fr/outils/csv
 
 https://monenfant.fr/que-recherchez-vous
 
+https://www.data.gouv.fr/datasets/finess-extraction-du-fichier-des-etablissements
+
 ---
 
 # Daycare Scraper – monenfant.fr
