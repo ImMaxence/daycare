@@ -1,9 +1,8 @@
 import { HeaderComponent } from '../header/header.component';
 import { AfterViewInit, Component, ElementRef, ViewChild, OnDestroy, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-// sets globalThis.L before the plugin loads, must stay first
-import './leaflet-global';
-import 'leaflet.markercluster';
+// registers globalThis.L and the markercluster plugin in a fixed order, must stay first
+import { LCluster } from './leaflet-setup';
 import * as L from 'leaflet';
 import { DaycareService } from '../../service/api/api/daycare.service';
 import { MapDaycareResponse } from '../../service/api/model/mapDaycareResponse';
@@ -88,7 +87,8 @@ export class MapComponent implements AfterViewInit, OnDestroy {
         }).addTo(this.map);
 
         // groups nearby pins into a single bubble so ~2000 points stay navigable
-        this.clusterGroup = L.markerClusterGroup({
+        // LCluster is the plugin-augmented globalThis.L (see leaflet-setup)
+        this.clusterGroup = LCluster.markerClusterGroup({
             maxClusterRadius: 60,
             spiderfyOnMaxZoom: true,
             showCoverageOnHover: false,
