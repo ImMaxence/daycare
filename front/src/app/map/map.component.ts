@@ -2,6 +2,7 @@ import { HeaderComponent } from '../header/header.component';
 import { AfterViewInit, Component, ElementRef, ViewChild, OnDestroy, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import * as L from 'leaflet';
+import 'leaflet.markercluster';
 import { DaycareService } from '../../service/api/api/daycare.service';
 import { MapDaycareResponse } from '../../service/api/model/mapDaycareResponse';
 import { DaycareDetailResponse } from '../../service/api/model/daycareDetailResponse';
@@ -21,16 +22,16 @@ const STATUS_META: Record<StatusEnum, { label: string; color: string }> = {
 };
 
 const TYPE_META: Record<TypeEnum, { label: string }> = {
-    [MapDaycareResponse.TypeEnum.Eaje]: { label: 'EAJE' },
-    [MapDaycareResponse.TypeEnum.Alsh]: { label: 'ALSH' },
-    [MapDaycareResponse.TypeEnum.Rpe]: { label: 'RPE' },
-    [MapDaycareResponse.TypeEnum.Laep]: { label: 'LAEP' },
-    [MapDaycareResponse.TypeEnum.Mecs]: { label: 'MECS' },
-    [MapDaycareResponse.TypeEnum.CentreMaternel]: { label: 'Centre maternel' },
-    [MapDaycareResponse.TypeEnum.VillageEnfants]: { label: 'Village d\'enfants' },
-    [MapDaycareResponse.TypeEnum.Pmi]: { label: 'PMI' },
+    [MapDaycareResponse.TypeEnum.Eaje]: { label: 'EAJE (Établissement d\'Accueil du Jeune Enfant)' },
+    [MapDaycareResponse.TypeEnum.Alsh]: { label: 'ALSH (Accueil de Loisirs Sans Hébergement)' },
+    [MapDaycareResponse.TypeEnum.Rpe]: { label: 'RPE (Relais Petite Enfance)' },
+    [MapDaycareResponse.TypeEnum.Laep]: { label: 'LAEP (Lieu d\'Accueil Enfants Parents)' },
+    [MapDaycareResponse.TypeEnum.Mecs]: { label: 'MECS (Maison d\'Enfants à Caractère Social)' },
+    [MapDaycareResponse.TypeEnum.CentreMaternel]: { label: 'Centre maternel (Centre maternel / parental)' },
+    [MapDaycareResponse.TypeEnum.VillageEnfants]: { label: 'Village d\'enfants (SOS Villages d\'Enfants...)' },
+    [MapDaycareResponse.TypeEnum.Pmi]: { label: 'PMI (Protection Maternelle et Infantile)' },
     [MapDaycareResponse.TypeEnum.CentreHospitalier]: { label: 'Centre hospitalier' },
-    [MapDaycareResponse.TypeEnum.Autre]: { label: 'Autre' },
+    [MapDaycareResponse.TypeEnum.Autre]: { label: 'Autre (Type inconnu / non qualifié)' },
 };
 
 @Component({
@@ -42,6 +43,7 @@ const TYPE_META: Record<TypeEnum, { label: string }> = {
 export class MapComponent implements AfterViewInit, OnDestroy {
     @ViewChild('mapContainer') mapContainer!: ElementRef;
     private map: L.Map | undefined;
+    private clusterGroup: L.MarkerClusterGroup | undefined;
     private readonly markers = new Map<string, L.Marker>();
 
     readonly selectedDaycare = signal<DaycareDetailResponse | null>(null);
@@ -82,26 +84,36 @@ export class MapComponent implements AfterViewInit, OnDestroy {
             subdomains: 'abcd',
             attribution: '© OpenStreetMap contributors © CARTO',
         }).addTo(this.map);
+
+        // groups nearby pins into a single bubble so ~2000 points stay navigable
+        this.clusterGroup = L.markerClusterGroup({
+            maxClusterRadius: 60,
+            spiderfyOnMaxZoom: true,
+            showCoverageOnHover: false,
+        });
+        this.map.addLayer(this.clusterGroup);
     }
 
     private loadPins(): void {
         this.daycareService.getDaycaresForMap().subscribe((daycares) => {
-            daycares.forEach((daycare) => this.addPin(daycare));
+            const newMarkers = daycares
+                .map((daycare) => this.createMarker(daycare))
+                .filter((marker): marker is L.Marker => marker !== null);
+            this.clusterGroup?.addLayers(newMarkers);
         });
     }
 
-    private addPin(daycare: MapDaycareResponse): void {
+    private createMarker(daycare: MapDaycareResponse): L.Marker | null {
         if (!daycare.id || daycare.latitude === undefined || daycare.longitude === undefined) {
-            return;
+            return null;
         }
 
         const marker = L.marker([daycare.latitude, daycare.longitude], {
             icon: this.buildIcon(daycare.status),
-        })
-            .addTo(this.map!)
-            .on('click', () => this.onPinClick(daycare.id!));
+        }).on('click', () => this.onPinClick(daycare.id!));
 
         this.markers.set(daycare.id, marker);
+        return marker;
     }
 
     private buildIcon(status: StatusEnum | undefined): L.DivIcon {
@@ -130,6 +142,10 @@ export class MapComponent implements AfterViewInit, OnDestroy {
 
     typeLabel(type: TypeEnum | undefined): string {
         return type ? TYPE_META[type].label : 'Non renseigné';
+    }
+
+    statusColor(status: StatusEnum | undefined): string {
+        return status ? STATUS_META[status].color : STATUS_META[MapDaycareResponse.StatusEnum.AContacter].color;
     }
 
     onStatusChange(status: StatusEnum): void {
@@ -192,8 +208,17 @@ export class MapComponent implements AfterViewInit, OnDestroy {
     }
 
     private highlightMarkers(ids: Set<string>): void {
-        this.markers.forEach((marker, id) => {
-            marker.setOpacity(ids.size === 0 || ids.has(id) ? 1 : 0.15);
-        });
+        if (!this.clusterGroup) {
+            return;
+        }
+
+        const markersToShow = ids.size === 0
+            ? Array.from(this.markers.values())
+            : Array.from(this.markers.entries())
+                .filter(([id]) => ids.has(id))
+                .map(([, marker]) => marker);
+
+        this.clusterGroup.clearLayers();
+        this.clusterGroup.addLayers(markersToShow);
     }
 }

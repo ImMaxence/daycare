@@ -102,16 +102,6 @@
                     </dd>
                 </div>
                 <div class="field">
-                    <dt>Note</dt>
-                    <dd>
-                        @if (daycare.note) {
-                        {{ daycare.note }}
-                        } @else {
-                        <span class="muted">Aucune note</span>
-                        }
-                    </dd>
-                </div>
-                <div class="field">
                     <dt>Coordonnées</dt>
                     <dd>{{ daycare.latitude }}, {{ daycare.longitude }}</dd>
                 </div>
@@ -165,8 +155,11 @@
             <ul class="search-results">
                 @for (result of searchResults(); track result.id) {
                 <li class="search-result-item" (click)="selectSearchResult(result)">
-                    <span class="search-result-name">{{ result.name }}</span>
-                    <span class="search-result-address">{{ result.postcode }} {{ result.city }}</span>
+                    <span class="search-result-status" [style.background-color]="statusColor(result.status)"></span>
+                    <span class="search-result-text">
+                        <span class="search-result-name">{{ result.name }}</span>
+                        <span class="search-result-address">{{ result.postcode }} {{ result.city }}</span>
+                    </span>
                 </li>
                 }
             </ul>
