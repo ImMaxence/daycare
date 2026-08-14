@@ -1,0 +1,6 @@
+target/
+output/*.json
+output/*.csv
+.idea/
+*.iml
+.DS_Store
