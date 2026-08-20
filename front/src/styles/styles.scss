@@ -7,6 +7,26 @@
 @import "leaflet.markercluster/dist/MarkerCluster.css";
 @import "leaflet.markercluster/dist/MarkerCluster.Default.css";
 
+// Leaflet renders cluster icons outside Angular's view-encapsulated DOM, so these rules must stay global.
+.daycare-cluster-icon {
+  background: none !important;
+  border: none !important;
+}
+
+.daycare-cluster {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  border: 3px solid #fff;
+  box-shadow: 0 0 4px rgba(0, 0, 0, 0.4);
+  color: #fff;
+  font-weight: 700;
+  font-size: 0.85rem;
+}
+
 * {
   font-family: var(--font-primary);
   box-sizing: border-box;

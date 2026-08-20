@@ -13,6 +13,11 @@ type StatusEnum = MapDaycareResponse.StatusEnum;
 type TypeEnum = MapDaycareResponse.TypeEnum;
 
 const FRANCE_CENTER: L.LatLngTuple = [46.6034, 1.8883];
+// distinct from STATUS_META's 'À contacter' gray, used only for mixed-status clusters
+const CLUSTER_MIXED_COLOR = '#6B7280';
+
+// tags each marker with its status so cluster icons can be colored from their children
+type StatusMarker = L.Marker & { daycareStatus?: StatusEnum };
 
 const STATUS_META: Record<StatusEnum, { label: string; color: string }> = {
     [MapDaycareResponse.StatusEnum.AContacter]: { label: 'À contacter', color: '#9CA3AF' },
@@ -45,7 +50,7 @@ export class MapComponent implements AfterViewInit, OnDestroy {
     @ViewChild('mapContainer') mapContainer!: ElementRef;
     private map: L.Map | undefined;
     private clusterGroup: L.MarkerClusterGroup | undefined;
-    private readonly markers = new Map<string, L.Marker>();
+    private readonly markers = new Map<string, StatusMarker>();
 
     readonly selectedDaycare = signal<DaycareDetailResponse | null>(null);
     readonly legendEntries = Object.entries(STATUS_META).map(([status, meta]) => ({
@@ -92,6 +97,7 @@ export class MapComponent implements AfterViewInit, OnDestroy {
             maxClusterRadius: 60,
             spiderfyOnMaxZoom: true,
             showCoverageOnHover: false,
+            iconCreateFunction: (cluster) => this.buildClusterIcon(cluster),
         });
         this.map.addLayer(this.clusterGroup);
     }
@@ -110,12 +116,27 @@ export class MapComponent implements AfterViewInit, OnDestroy {
             return null;
         }
 
-        const marker = L.marker([daycare.latitude, daycare.longitude], {
+        const marker: StatusMarker = L.marker([daycare.latitude, daycare.longitude], {
             icon: this.buildIcon(daycare.status),
         }).on('click', () => this.onPinClick(daycare.id!));
+        marker.daycareStatus = daycare.status;
 
         this.markers.set(daycare.id, marker);
         return marker;
+    }
+
+    private buildClusterIcon(cluster: L.MarkerCluster): L.DivIcon {
+        const childStatuses = new Set(
+            (cluster.getAllChildMarkers() as StatusMarker[]).map((marker) => marker.daycareStatus),
+        );
+        const color = childStatuses.size === 1 ? this.statusColor([...childStatuses][0]) : CLUSTER_MIXED_COLOR;
+        const count = cluster.getChildCount();
+
+        return L.divIcon({
+            className: 'daycare-cluster-icon',
+            html: `<div class="daycare-cluster" style="background-color:${color};">${count}</div>`,
+            iconSize: L.point(40, 40),
+        });
     }
 
     private buildIcon(status: StatusEnum | undefined): L.DivIcon {
@@ -160,7 +181,12 @@ export class MapComponent implements AfterViewInit, OnDestroy {
 
         this.daycareService.updateDaycareStatus(daycare.id, request).subscribe(() => {
             this.selectedDaycare.set({ ...daycare, status });
-            this.markers.get(daycare.id!)?.setIcon(this.buildIcon(status));
+            const marker = this.markers.get(daycare.id!);
+            if (marker) {
+                marker.daycareStatus = status;
+                marker.setIcon(this.buildIcon(status));
+            }
+            this.clusterGroup?.refreshClusters();
         });
     }
 
